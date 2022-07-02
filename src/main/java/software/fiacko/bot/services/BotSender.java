@@ -20,11 +20,12 @@ public class BotSender {
     private final Bot bot;
     private final TelegramProperties properties;
 
-    public void sendFile(InputFile file) {
+    public void sendFile(File file) {
+        InputFile inputFile = createInputFile(file);
         SendDocument sendDocumentRequest = new SendDocument();
         sendDocumentRequest.setChatId(properties.getChatId());
         sendDocumentRequest.setCaption("Сформирован файл:");
-        sendDocumentRequest.setDocument(file);
+        sendDocumentRequest.setDocument(inputFile);
         try {
             bot.execute(sendDocumentRequest);
         }
@@ -39,7 +40,6 @@ public class BotSender {
         }
         catch (TelegramApiException e) {
             throw new RuntimeException("Error on sending file ", e);
-
         }
     }
 

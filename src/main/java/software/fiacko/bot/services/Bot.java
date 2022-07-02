@@ -7,7 +7,6 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import software.fiacko.bot.config.TelegramProperties;
 
 import javax.annotation.PostConstruct;
@@ -16,14 +15,15 @@ import javax.annotation.PostConstruct;
 @Component
 @Slf4j
 public class Bot extends TelegramLongPollingBot {
+    private final TelegramBotsApi botsApi;
     private final TelegramProperties properties;
 
     @PostConstruct
     private void init() {
         try {
-            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-            telegramBotsApi.registerBot(this);
-        } catch (TelegramApiException e) {
+            botsApi.registerBot(this);
+        }
+        catch (TelegramApiException e) {
             log.error("Error on bot registering", e);
         }
     }

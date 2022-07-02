@@ -3,8 +3,6 @@ package software.fiacko.bot.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
-import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
 import software.fiacko.bot.config.FileCheckerProperties;
 
 import java.io.File;
@@ -14,7 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -47,8 +44,7 @@ public class FileScheduler {
             sender.sendFiles(files);
         }
         else {
-            InputFile inputFile = sender.createInputFile(files.get(0));
-            sender.sendFile(inputFile);
+            sender.sendFile(files.get(0));
         }
 
         lastSendingTime = Instant.now();
