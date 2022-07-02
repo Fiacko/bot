@@ -4,14 +4,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.objects.media.InputMedia;
 import software.fiacko.bot.config.FileCheckerProperties;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -25,21 +28,30 @@ public class FileScheduler {
 
     @Scheduled(fixedDelayString = "${software.fiacko.bot.file-checker.delay}")
     protected void checkFiles() {
+        List<File> files;
         try (Stream<Path> paths = Files.walk(Paths.get(properties.getDirectory()))) {
-            List<Path> files = paths
+            files = paths
                     .filter(this::filterFile)
+                    .map(Path::toFile)
                     .toList();
-            files.forEach(file -> {
-                InputFile inputFile = sender.createInputFile(file.toFile());
-                sender.sendFile(inputFile);
-            });
-            if (!files.isEmpty()) {
-                lastSendingTime = Instant.now();
-            }
-
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new RuntimeException("Error on getting file list: ", e);
         }
+
+        if (files.isEmpty()) {
+            return;
+        }
+
+        if (files.size() > 1) {
+            sender.sendFiles(files);
+        }
+        else {
+            InputFile inputFile = sender.createInputFile(files.get(0));
+            sender.sendFile(inputFile);
+        }
+
+        lastSendingTime = Instant.now();
     }
 
     private boolean filterFile(Path file) {
@@ -53,7 +65,8 @@ public class FileScheduler {
     private BasicFileAttributes readAttributes(Path path) {
         try {
             return Files.readAttributes(path, BasicFileAttributes.class);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new RuntimeException("Error on reading file attributes: ", e);
         }
     }
